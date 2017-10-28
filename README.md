@@ -35,11 +35,11 @@ git clone https://github.com/tankeryang/banciyuana-downloader.git
 ![coser_page](https://github.com/tankeryang/banciyuan-downloader/blob/master/README/coser_page.png)
 * 图2-coser发布的主题页
 ![post_page](https://github.com/tankeryang/banciyuan-downloader/blob/master/README/post_page.png)
-* 获取```user id```：```770554```（上图1箭头所指）
+* 获取```coser id```：```770554```（上图1箭头所指）
 * 运行```download.py```脚本：```python download.py```
 * ```input banciyuan account(phone number/e-mail): ```：输入半次元账号
 * ```input banciyuan password: ```：输入登录密码
-* ```input banciyuan user id: ```：输入user id```770554```
+* ```input banciyuan coser id: ```：输入coser id```770554```
 * ```input banciyuan home path: ```：输入半次元图片保存主目录```E:\banciyuan```
 * ```downding...```：等待下载完成
 
