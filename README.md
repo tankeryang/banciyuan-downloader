@@ -33,7 +33,7 @@ git clone https://github.com/tankeryang/banciyuana-downloader.git
 以下载[coser犬神洛洛子](https://bcy.net/u/770554)发布的所有主题的cos图为例
 * 图1：coser主页
 ![coser_page](https://github.com/tankeryang/banciyuan-downloader/blob/master/README/coser_page.png)
-* 图2-coser发布的主题页
+* 图2：coser发布的主题页
 ![post_page](https://github.com/tankeryang/banciyuan-downloader/blob/master/README/post_page.png)
 * 获取```coser id```：```770554```（上图1箭头所指）
 * 运行```download.py```脚本：```python download.py```
