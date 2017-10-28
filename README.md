@@ -1,7 +1,7 @@
 # banciyuan_downloader v1.0 --(Continuous updating 持续更新中)
 <strong><center><font color="#ff0000">请勿用于商业用途 尊重coser的版权 转载图片请注明出处</font></center></strong>
 
-此脚本实现了cos网站[半次元](https://bcy.net)__自定义__coser 的 __高清无码__ 图片批量下载，并保存到 __自定义__ 路径下
+此脚本实现了cos网站[半次元](https://bcy.net) __自定义coser__ 的 __高清无码__ 图片批量下载，并保存到 __自定义路径__ 下
 
 ## 实现功能
 * [x] 根据```coser_id```批量下载某个coser发布的主题的所有图片
