@@ -1,6 +1,7 @@
 import requests
 import time
 import os
+import random
 from get_banciyuan_pic_urls import get_post_urls, get_pic_urls
 
 def get_pics(account, password, user_id, user_dir, count=0):
@@ -20,10 +21,17 @@ def get_pics(account, password, user_id, user_dir, count=0):
 				number = 0
 				time.sleep(3)
 			else:
-				pic_count = 0
-				for fn in os.listdir(post_dir):
-					pic_count += 1
-				number = pic_count
+			#	pic_count = 0
+			#	for fn in os.listdir(post_dir):
+			#		pic_count += 1
+			#	number = pic_count
+				is_exists = True
+				while is_exists:
+					post_dir = post_dir + '(' + str(random.randint(1, 10)) + ')'
+					if not os.path.exists(post_dir):
+						os.makedirs(post_dir)
+						is_exists = False
+					pass
 				time.sleep(3)
 
 			for pic_url in pic_urls:
