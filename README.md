@@ -41,7 +41,7 @@ git clone https://github.com/tankeryang/banciyuana-downloader.git
 * ```input banciyuan password: ```：输入登录密码
 * ```input banciyuan coser id: ```：输入coser id```770554```
 * ```input banciyuan home path (i.e. E:\\banciyuan): ```：输入半次元图片保存主目录（如```E:\banciyuan```）
-* ```downding...```：等待下载完成
+* ```downloading...```：等待下载完成
 
 图片会 __按发布的主题分类__ 保存在如下路径：```{banciyuan_home_path}/{coser_name}/{post_name}/```
 其中：
