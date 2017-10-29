@@ -9,8 +9,9 @@ headers  = {
 
 def create_user_folder_name(user_id):
 	session = requests.session()
-	html    = session.get('https://bcy.net/u/{}'.format(str(user_id)), headers=headers)
-	soup    = BeautifulSoup(html.text, 'lxml')
+	html = session.get('https://bcy.net/u/{}'.format(str(user_id)), 
+                        headers=headers)
+	soup = BeautifulSoup(html.text, 'lxml')
 
 	user_folder_name = soup.find('a', href='/u/{}'.format(str(user_id))).get('title')
 	
