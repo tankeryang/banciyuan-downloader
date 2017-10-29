@@ -9,7 +9,7 @@ def get_pics(account, password, coser_id, coser_dir, count=0):
 
 	post_urls_list = get_post_urls(coser_id, count)
 
-	if  post_urls_list is not None:
+	if post_urls_list is not None:
 		post_nums = 1
 
 		for post_url in post_urls_list:
