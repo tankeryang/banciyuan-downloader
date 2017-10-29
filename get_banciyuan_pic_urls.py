@@ -10,10 +10,10 @@ headers  = {
     'Referer' : 'http://bcy.net'
 }
 
-def get_post_urls(user_id, count, home_url='https://bcy.net'):
+def get_post_urls(coser_id, count, home_url='https://bcy.net'):
 	post_per_page = 12
 	post_urls_list = []
-	user_post_url = home_url + '/u/' + str(user_id) + '/post/cos'
+	user_post_url = home_url + '/u/' + str(coser_id) + '/post/cos'
 
 	session = requests.session()
 	html = session.get(user_post_url, headers=headers)
@@ -95,7 +95,7 @@ def get_pic_urls(account, password, post_url, post_nums):
 		soup = BeautifulSoup(html.text, 'lxml')
 
 	post_name = re.sub('[\/:*?"<>|]', '', soup.find('div', class_='post__title').find('h1').get_text().strip().strip('\n').strip('.'))
-	
+
 	for tag in soup.find_all('img', class_='detail_std detail_clickable'):
 		pic_url = tag.get('src')
 		if pic_url.find('.jpg') is not -1:

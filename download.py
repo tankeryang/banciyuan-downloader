@@ -5,13 +5,13 @@ from get_banciyuan_pic import get_pics
 if __name__ == '__main__':
     account = input('input your banciyuan account (phone number/e-mail): ')
     password = input('input your banciyuan password: ')
-    user_id = input('input banciyuan coser id: ')
+    coser_id = input('input banciyuan coser id: ')
     banciyuan_home_dir = input('input banciyuan home path (i.e. E:\\banciyuan): ')
-    user_dir = banciyuan_home_dir + '\\' + create_user_folder_name(user_id)
+    coser_dir = banciyuan_home_dir + '\\' + create_user_folder_name(coser_id)
 
-	if not os.path.exists(user_dir):
-		os.mkdir(user_dir)
-		get_pics(account, password, user_id, user_dir)
+	if not os.path.exists(coser_dir):
+		os.mkdir(coser_dir)
+		get_pics(account, password, coser_id, coser_dir)
 	else:
-		count = len(os.listdir(user_dir))
-		get_pics(account, password, user_id, user_dir, count)
+		count = len(os.listdir(coser_dir))
+		get_pics(account, password, coser_id, coser_dir, count)
