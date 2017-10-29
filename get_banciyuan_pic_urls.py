@@ -46,7 +46,7 @@ def get_post_urls(coser_id, count, home_url='https://bcy.net'):
 		new_page_count = 0
 		last_page_id = page_nums
 
-		html = session.get(user_post_url + '?&p={}'.format(str(last_page_id)),               headers=headers)
+		html = session.get(user_post_url + '?&p={}'.format(str(last_page_id)), headers=headers)
 		soup = BeautifulSoup(html.text, 'lxml')
 
 		last_page_post_nums = len(soup.find_all('div', class_='postWorkCard__img ovf'))
@@ -77,7 +77,6 @@ def get_pic_urls(account, password, post_url, post_nums):
 	print('getting pics from post {}: '.format(str(post_nums)) + post_url + ' ...')
 
 #	time.sleep(5)
-
 	session = requests.session()
 	html = session.get(post_url, headers=headers)
 	soup = BeautifulSoup(html.text, 'lxml')
