@@ -27,7 +27,7 @@ def get_post_urls(coser_id, count, home_url='https://bcy.net'):
 	
 	if count is 0:
 		for page_id in range(1, page_nums + 1)[::-1]:
-			html = session.get(user_post_url + '?&p={}'.format(str(page_id)),headers=headers)
+			html = session.get(user_post_url + '?&p={}'.format(str(page_id)), headers=headers)
 			soup = BeautifulSoup(html.text, 'lxml')
 
 			for tag in soup.find_all('div', class_='postWorkCard__img ovf'):
