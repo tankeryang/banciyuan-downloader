@@ -50,15 +50,15 @@ def get_post_urls(coser_id, count, home_url='https://bcy.net'):
 		soup = BeautifulSoup(html.text, 'lxml')
 
 		last_page_post_nums = len(soup.find_all('div', class_='postWorkCard__img ovf'))
-
+	#	print(last_page_post_nums)
 		for page_id in range(1, math.ceil((new_posts_nums / post_per_page) + 1))[::-1]:
 			html = session.get(user_post_url + '?&p={}'.format(str(page_id)), headers=headers)
 			soup = BeautifulSoup(html.text, 'lxml')
 
 			new_page_count += 1
 
-			for tag in soup.find_all('div', class_='postWorkCard__img ovf'):
-				if new_page_count is 1 and count % post_per_page is not 0 and jump_post_nums < (count + post_per_page - last_page_post_nums) % post_per_page:
+			for tag in soup.find_all('div', class_='postWorkCard__img ovf')[::-1]:
+				if new_page_count is 1 and count % post_per_page is not 0 and jump_post_nums < (count - last_page_post_nums) % post_per_page:
 	#				post_urls_list.append(home_url + tag.find('a').get('href'))
 	#				new_download_nums += 1
 					jump_post_nums += 1
