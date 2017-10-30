@@ -16,9 +16,10 @@ def get_pics(account, password, coser_id, coser_dir, count=0):
 			post_name, pic_urls = get_pic_urls(account, password, post_url, post_nums)
 			post_dir = coser_dir + '\\' + post_name
 
+            number = 0
+            
 			if not os.path.exists(post_dir):
 				os.makedirs(post_dir)
-				number = 0
 				time.sleep(3)
 			else:
 			#	pic_count = 0
