@@ -8,10 +8,10 @@ headers = {
 }
 
 def create_coser_folder_name(coser_id):
-	session = requests.session()
-	html = session.get('https://bcy.net/u/{}'.format(str(coser_id)), headers=headers)
-	soup = BeautifulSoup(html.text, 'lxml')
+    session = requests.session()
+    html = session.get('https://bcy.net/u/{}'.format(str(coser_id)), headers=headers)
+    soup = BeautifulSoup(html.text, 'lxml')
 
-	coser_folder_name = soup.find('a', href='/u/{}'.format(str(coser_id))).get('title')
-	
-	return coser_folder_name
+    coser_folder_name = soup.find('a', href='/u/{}'.format(str(coser_id))).get('title')
+    
+    return coser_folder_name
