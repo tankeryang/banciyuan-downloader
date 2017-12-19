@@ -33,7 +33,7 @@ def get_post_urls(coser_id, count, home_url='https://bcy.net'):
 			for tag in soup.find_all('div', class_='postWorkCard__img ovf'):
 	#			if tag.find('span', class_='badge badge--red badge--s type-hover').get_text() == u'正片':
 				post_urls_list.append(home_url + tag.find('a').get('href'))
-	#				print(post_urls_list)
+	#			print(post_urls_list)
 		return post_urls_list
 	#	print(post_urls_list)
 	elif new_posts_nums <= 0:

@@ -7,11 +7,11 @@ headers = {
     'Referer' : 'http://bcy.net'
 }
 
-def create_user_folder_name(user_id):
+def create_coser_folder_name(coser_id):
 	session = requests.session()
-	html = session.get('https://bcy.net/u/{}'.format(str(user_id)), headers=headers)
+	html = session.get('https://bcy.net/u/{}'.format(str(coser_id)), headers=headers)
 	soup = BeautifulSoup(html.text, 'lxml')
 
-	user_folder_name = soup.find('a', href='/u/{}'.format(str(user_id))).get('title')
+	coser_folder_name = soup.find('a', href='/u/{}'.format(str(coser_id))).get('title')
 	
-	return user_folder_name
+	return coser_folder_name
