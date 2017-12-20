@@ -44,3 +44,4 @@ def get_pics(account, password, coser_id, coser_dir, count=0):
             post_nums += 1
 
     print('done.')
+    
