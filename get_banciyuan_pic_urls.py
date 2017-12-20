@@ -30,7 +30,7 @@ def get_post_urls(coser_id, count, home_url='https://bcy.net'):
             html = session.get(user_post_url + '?&p={}'.format(str(page_id)), headers=headers)
             soup = BeautifulSoup(html.text, 'lxml')
 
-            for tag in soup.find_all('div', class_='postWorkCard__img ovf'):
+            for tag in soup.find_all('div', class_='postWorkCard__img ovf')[::-1]:
     #            if tag.find('span', class_='badge badge--red badge--s type-hover').get_text() == u'正片':
                 post_urls_list.append(home_url + tag.find('a').get('href'))
     #            print(post_urls_list)
@@ -93,7 +93,10 @@ def get_pic_urls(account, password, post_url, post_nums):
         html = session.get(post_url, headers=headers)
         soup = BeautifulSoup(html.text, 'lxml')
 
-    post_name = re.sub('[\/:*?"<>|]', '', soup.find('div', class_='post__title').find('h1').get_text().strip().strip('\n').strip('.'))
+    if soup.find('div', class_='post__title').find('h1') is not None:
+        post_name = re.sub('[\/:*?"<>|]', '', soup.find('div', class_='post__title').find('h1').get_text().strip().strip('\n').strip('.'))
+    else:
+    	post_name = re.sub('[\/:*?"<>|]', '', soup.find('li', class_='tag').find('div', class_='btn__text-wrap').get_text().strip().strip('\n').strip('.'))
 
     for tag in soup.find_all('img', class_='detail_std detail_clickable'):
         pic_url = tag.get('src')
