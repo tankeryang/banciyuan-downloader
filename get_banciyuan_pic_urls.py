@@ -19,9 +19,14 @@ def get_post_urls(coser_id, count, home_url='https://bcy.net'):
     html = session.get(user_post_url, headers=headers)
     soup = BeautifulSoup(html.text, 'lxml')
 
-    post_nums_text = soup.find('li', class_='pager__item pager__item--is-cur pager__item--disabled').find('span').get_text()
-    post_nums = int(post_nums_text.strip(post_nums_text[0]).strip(post_nums_text[len(post_nums_text) - 1]))
-    page_nums = math.ceil(post_nums / post_per_page)
+    if soup.find('li', class_='pager__item pager__item--is-cur pager__item--disabled') is not None:
+        post_nums_text = soup.find('li', class_='pager__item pager__item--is-cur pager__item--disabled').find('span').get_text()
+        post_nums = int(post_nums_text.strip(post_nums_text[0]).strip(post_nums_text[len(post_nums_text) - 1]))
+        page_nums = math.ceil(post_nums / post_per_page)
+    else:
+    	post_nums = len(soup.find_all('div', class_='postWorkCard__img ovf'))
+    	page_nums = 1
+
     new_posts_nums = post_nums - count
 #    print(page_nums)
     
