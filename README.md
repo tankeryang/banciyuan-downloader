@@ -1,3 +1,7 @@
+# banciyuan_downloader v1.1 --(半次元前端重构，更新脚本以适应)
+* 更新时间: 2018-04-06
+
+
 # banciyuan_downloader v1.0 --(Continuous updating 持续更新中)
 <strong><center><font color="#ff0000">请勿用于商业用途 尊重coser的版权 转载图片请注明出处</font></center></strong>
 
