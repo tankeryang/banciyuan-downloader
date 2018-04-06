@@ -7,7 +7,7 @@ if __name__ == '__main__':
     password = input('Enter your banciyuan password: ')
     coser_id = input('Enter banciyuan coser id: ')
     banciyuan_home_dir = input('Enter banciyuan home path (i.e. E:\\banciyuan): ')
-    coser_dir = banciyuan_home_dir + '\\' + create_coser_folder_name(coser_id)
+    coser_dir = banciyuan_home_dir + '/' + create_coser_folder_name(coser_id)
 
     if not os.path.exists(coser_dir):
         os.mkdir(coser_dir)
