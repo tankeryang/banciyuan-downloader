@@ -37,7 +37,7 @@ def get_post_urls(coser_id, count, home_url='https://bcy.net'):
     ) is not None:
         post_nums_text = soup.find(
             name='li', class_='pager__item pager__item--is-cur pager__item--disabled'
-        ).find(name='span').get_text()
+        ).find('span').get_text()
         post_nums = eval(
             post_nums_text.strip(post_nums_text[0]).strip(post_nums_text[len(post_nums_text) - 1])
         )
@@ -54,8 +54,9 @@ def get_post_urls(coser_id, count, home_url='https://bcy.net'):
         for page_id in range(1, page_nums + 1)[::-1]:
             html = session.get(url=coser_post_url + '?&p={}'.format(str(page_id)), headers=headers)
             soup = BeautifulSoup(html.text, 'lxml')
-            for tag in soup.find_all(name='div', class_='ovf')[::-1]:
-                post_urls_list.append(home_url + tag.find(name='a').get('href'))
+            for tag in soup.find_all(name='li', class_='_box posr imgCard-l')[::-1]:
+                post_urls_list.append(home_url + tag.find('a', class_='postWorkCard__link').get('href'))
+    
     # 更新下载
     elif new_posts_nums > 0 and count != 0:
         jump_post_count = 0       # 需要跳过下载的作品计数
@@ -75,16 +76,17 @@ def get_post_urls(coser_id, count, home_url='https://bcy.net'):
 
             new_page_count += 1
 
-            for tag in soup.find_all(name='div', class_='ovf')[::-1]:
+            for tag in soup.find_all(name='li', class_='_box posr imgCard-l')[::-1]:
                 if new_page_count == 1 \
                     and count % post_per_page != 0 \
                     and jump_post_count < (count - last_page_post_nums) % post_per_page:
                     jump_post_count += 1
                 else:
-                    post_urls_list.append(home_url + tag.find('a').get('href'))
+                    post_urls_list.append(home_url + tag.find(name='a', class_='postWorkCard__link').get('href'))
                     new_download_count += 1
-                    if new_download_count is new_posts_nums:
+                    if new_download_count == new_posts_nums:
                         break
+    
     # 无需更新
     else:
         logging.info('the local post is latest, need not to download.')
@@ -124,7 +126,7 @@ def get_pic_urls(account, password, post_url, post_count):
         soup = BeautifulSoup(html.text, 'lxml')
 
     # 获取所属作品名
-    if soup.find('div', class_='post__title').find('h1') is not None:
+    if soup.find(name='div', class_='post__title').find('h1') is not None:
         post_name = re.sub(
             r'[\/:*?"<>|]',
             '',
@@ -141,13 +143,13 @@ def get_pic_urls(account, password, post_url, post_count):
                 name='li',
                 class_='tag'
             ).find(
-                name='i',
+                'i',
                 class_='i-origin-tag vam'
             ).get_text().strip().strip('\n').strip('.')
         )
 
     # 获取图片url列表
-    for tag in soup.find_all('img', class_='detail_std detail_clickable'):
+    for tag in soup.find_all(name='img', class_='detail_std detail_clickable'):
         pic_url = tag.get('src')
         if pic_url.find('.jpg') != -1:
             pic_urls_list.append(pic_url.split('.jpg')[0] + '.jpg')
