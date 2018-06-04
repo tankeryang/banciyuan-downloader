@@ -23,7 +23,6 @@ def get_post_urls(coser_id, count, home_url='https://bcy.net'):
     :return post_url_list: 发布作品的url列表(type: list)
     """
 
-    post_per_page = 12
     post_urls_list = []
     
     coser_post_url = home_url + '/u/' + str(coser_id) + '/post/cos'
