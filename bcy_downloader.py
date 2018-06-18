@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.dummy import Pool as ThreadPool
+from threading import Lock
 logging.basicConfig(level=logging.INFO)
 
 
@@ -27,6 +28,7 @@ class Downloader():
         self.__post_per_page = 35
         self.__post_url_list = []
         self.__download_data = {}
+        self.__lock = Lock()
 
         if not os.path.exists(self.__coser_dir):
             os.mkdir(self.__coser_dir)
@@ -74,7 +76,7 @@ class Downloader():
 
     def __login(self):
         session = requests.session()
-        request_retry = requests.adapters.HTTPAdapter(max_retries=3)
+        request_retry = requests.adapters.HTTPAdapter(max_retries=10)
 
         session.mount('https://',request_retry)
         session.mount('http://',request_retry)
@@ -119,7 +121,7 @@ class Downloader():
         for post_dir in os.listdir(self.__coser_dir):
             if post_dir == '.DS_Store':
                 continue
-            if 'url.local' in os.listdir(self.__coser_dir + '/' + post_dir):
+            if os.path.exists(self.__coser_dir + '/' + post_dir + '/' + 'url.local'):
                 f = open(self.__coser_dir + '/'+ post_dir + '/url.local', 'r')
                 local_post_url_list.append(f.readline().strip().strip('\n'))
 
@@ -146,6 +148,13 @@ class Downloader():
         self.__post_url_list = post_urls_list
 
     def __get_pics_url_list(self, post_url):
+        # if post_url_list is None:
+        #     post_url_list = self.__post_url_list
+        # if len(post_url_list) == 0:
+        #     logging.warning("There are no post url to download. Please execute get_post_url_list() first.")
+        #     sys.exit(1)
+
+        # for post_url in post_url_list:
         pics_url_list = []
 
         resp = self.__session.get(url=post_url)
@@ -156,27 +165,29 @@ class Downloader():
             r'[\/:*?"<>|]', '-',
             '-'.join(list(map(lambda x: x.text.strip().strip('\n').strip('.'), soup.find_all(name='a', class_='_tag _tag--normal db'))))
         )
-        
+        print(post_url, post_name)
         # 创建新作品文件夹
-        if post_name not in os.listdir(self.__coser_dir):
+        if not os.path.exists(self.__coser_dir + '/' + post_name):
             os.mkdir(self.__coser_dir + '/' + post_name)
         # 处理同名作品
         else:
             is_exists = True
             post_name_id_list = [str(i) for i in range(20, 0, -1)]
             while is_exists:
-                post_name = post_name + '({})'.format(post_name_id_list.pop())
-                if post_name not in os.listdir(self.__coser_dir):
-                    os.mkdir(self.__coser_dir + '/' + post_name)
+                post_id = post_name_id_list.pop()
+                if not os.path.exists(self.__coser_dir + '/' + post_name + '({})'.format(post_id)):
+                    os.mkdir(self.__coser_dir + '/' + post_name + '({})'.format(post_id))
+                    post_name = post_name + '({})'.format(post_id)
+                    is_exists = False
 
         # 获取图片url列表
         for pic_id, tag in enumerate(soup.find_all(name='img', class_='detail_std detail_clickable'), 1):
             pic_url = tag.get('src')
             # url后加?pic_id是为了后面写入时能按编号命名文件
-            if pic_url.find('.jpg') != -1:
-                pics_url_list.append(pic_url.split('.jpg')[0] + '.jpg?' + str(pic_id))
-            elif pic_url.find('.png') != -1:
-                pics_url_list.append(pic_url.split('.png')[0] + '.png?'+ str(pic_id))
+            if pic_url[-5:] == '/w650':
+                pics_url_list.append(pic_url[:-5] + '?' + str(pic_id))
+            else:
+                pics_url_list.append(pic_url + '?'+ str(pic_id))
 
         self.__download_data[post_url] = {'post_name': post_name, 'pics_url_list': pics_url_list}
 
@@ -194,17 +205,17 @@ class Downloader():
     def __get_pics(self, post_url, post_name, pic_url):
         post_dir = self.__coser_dir + '/' + post_name
 
-        if 'url.local' not in os.listdir(post_dir):
+        if not os.path.exists(post_dir + '/' + 'url.local'):
             open(post_dir + '/url.local', 'wb').write(post_url.encode('utf-8'))
         
         # 保存图片
+        time.sleep(0.2)
         pic = self.__session.get(pic_url.split('?')[0], timeout=3)
         if pic.status_code is 200:
             logging.info("{}: {}".format(pic_url.split('?')[0], pic_url.split('?')[1]))
             open(post_dir + '/' + pic_url.split('?')[1] + '.jpg', 'wb').write(pic.content)
         else:
             logging.error("{} status code: {}".format(pic_url.split('?')[0], pic.status_code))
-        time.sleep(0.2)
 
     def get_pics(self):
         for post_url in self.__download_data.keys():
