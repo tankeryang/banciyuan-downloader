@@ -44,12 +44,14 @@
 * 直接运行`run.py`
 
     先执行:
-    ```
+
+    ```python
     python run.py
     ```
+
     后续步骤参考[Usage](#usage)
 
-* 自定义实现
+* 自定义实现
 
     因为进行了 __模块化__，所以可以自行实例化一个`Downloader`对象来调用方法实现功能，下面给出简单例子:
 
@@ -78,7 +80,7 @@
     dl.get_pics_url_list()
 
     # 查看download_data
-    # 格式为如下:
+    # 格式如下
     # {
     #   '$(post_url)':
     #   {
