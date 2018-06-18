@@ -154,9 +154,21 @@ class Downloader():
         # 获取所属作品名
         post_name = re.sub(
             r'[\/:*?"<>|]', '-',
-            '-'.join(list((map(lambda x: x.text.strip().strip('\n').strip('.'), soup.find_all(name='a', class_='_tag _tag--normal db')))))
+            '-'.join(list(map(lambda x: x.text.strip().strip('\n').strip('.'), soup.find_all(name='a', class_='_tag _tag--normal db'))))
         )
         
+        # 创建新作品文件夹
+        if post_name not in os.listdir(self.__coser_dir):
+            os.mkdir(self.__coser_dir + '/' + post_name)
+        # 处理同名作品
+        else:
+            is_exists = True
+            post_name_id_list = [str(i) for i in range(20, 0, -1)]
+            while is_exists:
+                post_name = post_name + '({})'.format(post_name_id_list.pop())
+                if post_name not in os.listdir(self.__coser_dir):
+                    os.mkdir(self.__coser_dir + '/' + post_name)
+
         # 获取图片url列表
         for pic_id, tag in enumerate(soup.find_all(name='img', class_='detail_std detail_clickable'), 1):
             pic_url = tag.get('src')
@@ -182,19 +194,6 @@ class Downloader():
     def __get_pics(self, post_url, post_name, pic_url):
         post_dir = self.__coser_dir + '/' + post_name
 
-        # 创建新作品文件夹
-        if post_name not in os.listdir(self.__coser_dir):
-            os.mkdir(post_dir)
-        # 处理同名作品
-        else:
-            is_exists = True
-            post_name_id_list = [str(i) for i in range(20, 0, -1)]
-            while is_exists:
-                post_name_id = post_name_id_list.pop()
-                if post_name + '({})'.format(post_name_id) not in os.listdir(self.__coser_dir):
-                    os.mkdir(post_dir + '({})'.format(post_name_id))
-                    is_exists = False
-
         if 'url.local' not in os.listdir(post_dir):
             open(post_dir + '/url.local', 'wb').write(post_url.encode('utf-8'))
         
@@ -205,17 +204,17 @@ class Downloader():
             open(post_dir + '/' + pic_url.split('?')[1] + '.jpg', 'wb').write(pic.content)
         else:
             logging.error("{} status code: {}".format(pic_url.split('?')[0], pic.status_code))
-        time.sleep(0.5)
+        time.sleep(0.2)
 
     def get_pics(self):
-        pool = ThreadPool(processes=4)
         for post_url in self.__download_data.keys():
+            pool = ThreadPool(processes=4)
             logging.info("Downloading pictrues from {}".format(post_url))
             post_name = self.__download_data[post_url]['post_name']
             pics_url_list = self.__download_data[post_url]['pics_url_list']
             pool.map(partial(self.__get_pics, post_url, post_name), pics_url_list)
-        pool.close()
-        pool.join()
+            pool.close()
+            pool.join()
 
     def run(self):
         self.get_post_url_list()
