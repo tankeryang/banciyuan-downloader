@@ -174,7 +174,7 @@ class Downloader():
         if len(post_url_list) == 0:
             logging.warning("There are no post url to download. Please execute get_post_url_list() first.")
             sys.exit(1)
-        pool = ThreadPool(processes=3)
+        pool = ThreadPool(processes=4)
         pool.map(self.__get_pics_url_list, post_url_list)
         pool.close()
         pool.join()
@@ -198,17 +198,17 @@ class Downloader():
         if 'url.local' not in os.listdir(post_dir):
             open(post_dir + '/url.local', 'wb').write(post_url.encode('utf-8'))
         
-        # 获取图片内容
+        # 保存图片
         pic = self.__session.get(pic_url.split('?')[0], timeout=3)
         if pic.status_code is 200:
             logging.info("{}: {}".format(pic_url.split('?')[0], pic_url.split('?')[1]))
             open(post_dir + '/' + pic_url.split('?')[1] + '.jpg', 'wb').write(pic.content)
         else:
-            logging.error("{} status code: {}".format(args_pic[1], pic.status_code))
+            logging.error("{} status code: {}".format(pic_url.split('?')[0], pic.status_code))
         time.sleep(0.5)
 
     def get_pics(self):
-        pool = ThreadPool(processes=3)
+        pool = ThreadPool(processes=4)
         for post_url in self.__download_data.keys():
             logging.info("Downloading pictrues from {}".format(post_url))
             post_name = self.__download_data[post_url]['post_name']
