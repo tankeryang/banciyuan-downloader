@@ -6,9 +6,14 @@ if __name__ == '__main__':
     # coser_id = input('Enter banciyuan coser id: ')
     # bcy_home_dir = input('Enter banciyuan home path (i.e. E:\\banciyuan): ')
 
-    dl = Downloader(account='18926229838', password='banciyuan950820', coser_id='770554', bcy_home_dir='/Users/yang/Pictures/banciyuan')
+    dl = Downloader(account='18926229838', password='banciyuan950820', coser_id='161539', bcy_home_dir='/Users/yang/Pictures/banciyuan')
     # dl = Downloader(account=account, password=password, coser_id=coser_id, bcy_home_dir=bcy_home_dir)
-    # dl.get_post_url_list()
+    # dl.post_url_list = [
+    #     "https://bcy.net/item/detail/6364809505930239758",
+    #     "https://bcy.net/item/detail/6362154245478702862"
+    # ]
+    print(dl.local_post_url_list)
+    dl.get_post_url_list()
     # dl.get_pics_url_list()
-
-    dl.run()
+    # dl.get_pics()
+    # dl.run()

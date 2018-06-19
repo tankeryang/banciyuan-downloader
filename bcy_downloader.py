@@ -10,7 +10,6 @@ from bs4 import BeautifulSoup
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.dummy import Pool as ThreadPool
-from threading import Lock
 logging.basicConfig(level=logging.INFO)
 
 
@@ -24,11 +23,10 @@ class Downloader():
         self.__home_url = "https://bcy.net"
         self.__login_url = "https://bcy.net/public/dologin"
         self.__session = self.__login()
-        self.__coser_dir = self.bcy_home_dir + '/' + self._create_coser_dir_name()
+        self.__coser_dir = self.bcy_home_dir + '/' + self.__create_coser_dir_name()
         self.__post_per_page = 35
         self.__post_url_list = []
         self.__download_data = {}
-        self.__lock = Lock()
 
         if not os.path.exists(self.__coser_dir):
             os.mkdir(self.__coser_dir)
@@ -67,7 +65,26 @@ class Downloader():
     def download_data(self):
         return self.__download_data
     
-    def _create_coser_dir_name(self):
+    @property
+    def local_post_url_list(self):
+        """返回本地已下载作品列表"""
+        local_post_url_list = []
+
+        def get_local_post_url(post_dir):
+            if post_dir == '.DS_Store':
+                pass
+            elif os.path.exists(self.__coser_dir + '/' + post_dir + '/' + 'url.local'):
+                f = open(self.__coser_dir + '/'+ post_dir + '/url.local', 'r')
+                local_post_url_list.append(f.readline().strip().strip('\n'))
+
+        pool = ThreadPool(processes=4)
+        pool.map(get_local_post_url, os.listdir(self.__coser_dir))             
+        pool.close()
+        pool.join()
+
+        return local_post_url_list
+
+    def __create_coser_dir_name(self):
         session = requests.session()
         resp = self.__session.get(self.__home_url + '/u/{}'.format(self.coser_id))
         soup = BeautifulSoup(resp.text, 'lxml')
@@ -95,7 +112,7 @@ class Downloader():
             sys.exit(1)
         else:
             return session
-    
+
     def get_post_url_list(self):
         post_urls_list = []
         local_post_url_list = []
@@ -118,12 +135,12 @@ class Downloader():
             page_nums = 1
 
         # 本地已下载作品列表
-        for post_dir in os.listdir(self.__coser_dir):
-            if post_dir == '.DS_Store':
-                continue
-            if os.path.exists(self.__coser_dir + '/' + post_dir + '/' + 'url.local'):
-                f = open(self.__coser_dir + '/'+ post_dir + '/url.local', 'r')
-                local_post_url_list.append(f.readline().strip().strip('\n'))
+        # for post_dir in os.listdir(self.__coser_dir):
+        #     if post_dir == '.DS_Store':
+        #         continue
+        #     if os.path.exists(self.__coser_dir + '/' + post_dir + '/' + 'url.local'):
+        #         f = open(self.__coser_dir + '/'+ post_dir + '/url.local', 'r')
+        #         local_post_url_list.append(f.readline().strip().strip('\n'))
 
         # 所有作品
         if self.post_type == 'all':
@@ -134,17 +151,18 @@ class Downloader():
                     post_urls_list.append(self.__home_url + tag.find('a', class_='db posr ovf').get('href'))
         elif self.post_type == 'cos':
             # TODO: 只获取带有`COS`标签的作品，这个必须解析每个作品页才能获取到
-            logging.warning("This type dosen't support. Please use type [all].")
+            logging.warning("This type dosen't support now. Please use type [all].")
             sys.exit(1)
         
         # 需下载的作品
-        post_urls_list = list(set(post_urls_list).difference(set(local_post_url_list)))
+        post_urls_list = list(set(post_urls_list).difference(set(self.local_post_url_list)))
 
         # 无需更新
         if len(post_urls_list) == 0:
             logging.info('The local post is latest, need not to download.')
             sys.exit(0)
         
+        logging.info("There are %d post you can update." % len(post_urls_list))
         self.__post_url_list = post_urls_list
 
     def __get_pics_url_list(self, post_url):
@@ -197,10 +215,12 @@ class Downloader():
         if len(post_url_list) == 0:
             logging.warning("There are no post url to download. Please execute get_post_url_list() first.")
             sys.exit(1)
+        print("Folowing post will be downloaded.")
         pool = ThreadPool(processes=4)
         pool.map(self.__get_pics_url_list, post_url_list)
         pool.close()
         pool.join()
+        print(100*"=")
 
     def __get_pics(self, post_url, post_name, pic_url):
         post_dir = self.__coser_dir + '/' + post_name
@@ -209,23 +229,26 @@ class Downloader():
             open(post_dir + '/url.local', 'wb').write(post_url.encode('utf-8'))
         
         # 保存图片
-        time.sleep(0.2)
+        # time.sleep(0.2)
         pic = self.__session.get(pic_url.split('?')[0], timeout=3)
         if pic.status_code is 200:
-            logging.info("{}: {}".format(pic_url.split('?')[0], pic_url.split('?')[1]))
+            logging.info(" url: {} id: {}".format(pic_url.split('?')[0], pic_url.split('?')[1]))
             open(post_dir + '/' + pic_url.split('?')[1] + '.jpg', 'wb').write(pic.content)
         else:
-            logging.error("{} status code: {}".format(pic_url.split('?')[0], pic.status_code))
+            logging.error(" {} not found. status code: {}".format(pic_url.split('?')[0], pic.status_code))
 
     def get_pics(self):
+        pool = ThreadPool(processes=4)
+        logging.info("Downloading...")
         for post_url in self.__download_data.keys():
-            pool = ThreadPool(processes=4)
-            logging.info("Downloading pictrues from {}".format(post_url))
+            logging.info("Downloading pictrues from {}...".format(post_url))
             post_name = self.__download_data[post_url]['post_name']
             pics_url_list = self.__download_data[post_url]['pics_url_list']
             pool.map(partial(self.__get_pics, post_url, post_name), pics_url_list)
-            pool.close()
-            pool.join()
+            print(100*"=")
+            # time.sleep(1)
+        pool.close()
+        pool.join()
 
     def run(self):
         self.get_post_url_list()
