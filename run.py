@@ -13,7 +13,7 @@ if __name__ == '__main__':
     #     "https://bcy.net/item/detail/6362154245478702862"
     # ]
     print(dl.local_post_url_list)
-    dl.get_post_url_list()
+    # dl.get_post_url_list()
     # dl.get_pics_url_list()
     # dl.get_pics()
     # dl.run()

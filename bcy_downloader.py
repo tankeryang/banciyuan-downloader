@@ -59,7 +59,12 @@ class Downloader():
     def post_url_list(self, values):
         if not isinstance(values, list):
             raise ValueError("attribute post_per_page type shoud be list!!")
-        self.__post_url_list = values
+            
+        self.__post_url_list = list(set(values).difference(set(self.local_post_url_list)))
+
+        if len(self.__post_url_list) == 0:
+            logging.info('The local post is latest, need not to download.')
+            sys.exit(0)
 
     @property
     def download_data(self):
