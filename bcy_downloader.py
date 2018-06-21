@@ -89,13 +89,6 @@ class Downloader():
 
         return local_post_url_list
 
-    def __create_coser_dir_name(self):
-        session = requests.session()
-        resp = self.__session.get(self.__home_url + '/u/{}'.format(self.coser_id))
-        soup = BeautifulSoup(resp.text, 'lxml')
-
-        return soup.find(name='a', href='/u/{}'.format(str(self.coser_id))).get('title')
-
     def __login(self):
         session = requests.session()
         request_retry = requests.adapters.HTTPAdapter(max_retries=10)
@@ -117,6 +110,28 @@ class Downloader():
             sys.exit(1)
         else:
             return session
+
+    def __create_coser_dir_name(self):
+        session = requests.session()
+        resp = self.__session.get(self.__home_url + '/u/{}'.format(self.coser_id))
+        soup = BeautifulSoup(resp.text, 'lxml')
+
+        return soup.find(name='a', href='/u/{}'.format(str(self.coser_id))).get('title')
+
+    def __create_post_dir(self, post_name):
+        # 创建新作品文件夹
+        if not os.path.exists(self.__coser_dir + '/' + post_name):
+            os.mkdir(self.__coser_dir + '/' + post_name)
+        # 处理同名作品
+        else:
+            is_exists = True
+            post_name_id_list = [str(i) for i in range(20, 0, -1)]
+            while is_exists:
+                post_id = post_name_id_list.pop()
+                if not os.path.exists(self.__coser_dir + '/' + post_name + '({})'.format(post_id)):
+                    os.mkdir(self.__coser_dir + '/' + post_name + '({})'.format(post_id))
+                    post_name = post_name + '({})'.format(post_id)
+                    is_exists = False
 
     def get_post_url_list(self):
         post_urls_list = []
@@ -188,20 +203,8 @@ class Downloader():
             r'[\/:*?"<>|]', '-',
             '-'.join(list(map(lambda x: x.text.strip().strip('\n').strip('.'), soup.find_all(name='a', class_='_tag _tag--normal db'))))
         )
+        
         print(post_url, post_name)
-        # 创建新作品文件夹
-        if not os.path.exists(self.__coser_dir + '/' + post_name):
-            os.mkdir(self.__coser_dir + '/' + post_name)
-        # 处理同名作品
-        else:
-            is_exists = True
-            post_name_id_list = [str(i) for i in range(20, 0, -1)]
-            while is_exists:
-                post_id = post_name_id_list.pop()
-                if not os.path.exists(self.__coser_dir + '/' + post_name + '({})'.format(post_id)):
-                    os.mkdir(self.__coser_dir + '/' + post_name + '({})'.format(post_id))
-                    post_name = post_name + '({})'.format(post_id)
-                    is_exists = False
 
         # 获取图片url列表
         for pic_id, tag in enumerate(soup.find_all(name='img', class_='detail_std detail_clickable'), 1):
@@ -245,15 +248,21 @@ class Downloader():
     def get_pics(self):
         pool = ThreadPool(processes=4)
         logging.info("Downloading...")
+
         for post_url in self.__download_data.keys():
             logging.info("Downloading pictrues from {}...".format(post_url))
+
             post_name = self.__download_data[post_url]['post_name']
             pics_url_list = self.__download_data[post_url]['pics_url_list']
+
+            self.__create_post_dir(post_name)
             pool.map(partial(self.__get_pics, post_url, post_name), pics_url_list)
             print(100*"=")
             # time.sleep(1)
         pool.close()
         pool.join()
+
+        print("Download compelete!!")
 
     def run(self):
         self.get_post_url_list()
