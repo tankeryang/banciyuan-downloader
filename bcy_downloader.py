@@ -132,6 +132,7 @@ class Downloader():
                     os.mkdir(self.__coser_dir + '/' + post_name + '({})'.format(post_id))
                     post_name = post_name + '({})'.format(post_id)
                     is_exists = False
+        return post_name
 
     def get_post_url_list(self):
         post_urls_list = []
@@ -237,10 +238,9 @@ class Downloader():
         for post_url in self.__download_data.keys():
             logging.info("Downloading pictrues from {}...".format(post_url))
 
-            post_name = self.__download_data[post_url]['post_name']
+            post_name = self.__create_post_dir(self.__download_data[post_url]['post_name'])
             pics_url_list = self.__download_data[post_url]['pics_url_list']
 
-            self.__create_post_dir(post_name)
             pool.map(partial(self.__get_pics, post_url, post_name), pics_url_list)
             print(100*"=")
             # time.sleep(1)
