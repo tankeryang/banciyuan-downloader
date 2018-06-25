@@ -59,11 +59,7 @@ class Downloader():
     def post_url_list(self, values):
         if not isinstance(values, list):
             raise ValueError("attribute post_per_page type shoud be list!!")
-<<<<<<< HEAD
-
-=======
             
->>>>>>> dev
         self.__post_url_list = list(set(values).difference(set(self.local_post_url_list)))
 
         if len(self.__post_url_list) == 0:
@@ -194,23 +190,6 @@ class Downloader():
         )
         
         print(post_url, post_name)
-<<<<<<< HEAD
-        
-        # 创建新作品文件夹
-        if not os.path.exists(self.__coser_dir + '/' + post_name):
-            os.mkdir(self.__coser_dir + '/' + post_name)
-        # 处理同名作品
-        else:
-            is_exists = True
-            post_name_id_list = [str(i) for i in range(20, 0, -1)]
-            while is_exists:
-                post_id = post_name_id_list.pop()
-                if not os.path.exists(self.__coser_dir + '/' + post_name + '({})'.format(post_id)):
-                    os.mkdir(self.__coser_dir + '/' + post_name + '({})'.format(post_id))
-                    post_name = post_name + '({})'.format(post_id)
-                    is_exists = False
-=======
->>>>>>> dev
 
         # 获取图片url列表
         for pic_id, tag in enumerate(soup.find_all(name='img', class_='detail_std detail_clickable'), 1):
