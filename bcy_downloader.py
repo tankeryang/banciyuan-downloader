@@ -21,7 +21,8 @@ class Downloader():
         self.bcy_home_dir = bcy_home_dir
         self.post_type = post_type
         self.__home_url = "https://bcy.net"
-        self.__login_url = "https://bcy.net/public/dologin"
+        self.__web_user_url = "https://bcy.net/passport/web/user/login/?account_sdk_source=web"
+        self.__dologin_url = "https://bcy.net/public/dologin"
         self.__session = self.__login()
         self.__coser_dir = self.bcy_home_dir + '/' + self.__create_coser_dir_name()
         self.__post_per_page = 35
@@ -98,18 +99,27 @@ class Downloader():
         session.get(url=self.__home_url)
         session.headers.update({'X-Requested-With': 'XMLHttpRequest', 'Referer': 'http://bcy.net/'})
 
-        form_data = {
-            'email': self.account,
+        # 先请求https://bcy.net/passport/web/user/login/?account_sdk_source=web拿到user_id
+        form_data_web_user = {
+            'account': self.account,
             'password': self.password,
-            'remember': '1',
-            '_csrf_token': session.cookies.get_dict()['_csrf_token']
+            'aid': '1305'
         }
-        resp = session.post(url=self.__login_url, data=form_data)
-        if 'LOGGED_USER' not in resp.cookies.get_dict().keys():
+        response_web_user = session.post(url=self.__web_user_url, data=form_data_web_user).json()
+        if response_web_user['message'] == 'error':
             logging.error("account or password error. login failed.")
             sys.exit(1)
         else:
-            return session
+            user_id = response_web_user['data']['user_id']
+
+        # 再请求dologin登录
+        form_data_dologin = {
+            'user_id': user_id,
+            '_csrf_token': session.cookies.get_dict()['_csrf_token']
+        }
+        session.post(url=self.__dologin_url, data=form_data_dologin)
+
+        return session
 
     def __create_coser_dir_name(self):
         session = requests.session()
