@@ -6,6 +6,7 @@ import re
 import random
 import logging
 import requests
+import msvcrt
 from bs4 import BeautifulSoup
 from functools import partial
 from multiprocessing import Pool
@@ -65,6 +66,7 @@ class Downloader():
 
         if len(self.__post_url_list) == 0:
             logging.info('The local post is latest, need not to download.')
+            input("Press any keys to exit...")
             sys.exit(0)
 
     @property
@@ -108,6 +110,7 @@ class Downloader():
         response_web_user = session.post(url=self.__web_user_url, data=form_data_web_user).json()
         if response_web_user['message'] == 'error':
             logging.error("account or password error. login failed.")
+            input("Press any keys to exit...")
             sys.exit(1)
         else:
             user_id = response_web_user['data']['user_id']
@@ -175,6 +178,7 @@ class Downloader():
         elif self.post_type == 'cos':
             # TODO: 只获取带有`COS`标签的作品，这个必须解析每个作品页才能获取到
             logging.warning("This type dosen't support now. Please use type [all].")
+            input("Press any keys to exit...")
             sys.exit(1)
         
         # 需下载的作品
@@ -183,6 +187,7 @@ class Downloader():
         # 无需更新
         if len(post_urls_list) == 0:
             logging.info('The local post is latest, need not to download.')
+            input("Press any keys to exit...")
             sys.exit(0)
         
         logging.info("There are %d post you can update." % len(post_urls_list))
@@ -218,6 +223,7 @@ class Downloader():
             post_url_list = self.__post_url_list
         if len(post_url_list) == 0:
             logging.warning("There are no post url to download. Please execute get_post_url_list() first.")
+            input("Press any keys to exit...")
             sys.exit(1)
         print("Folowing post will be downloaded.")
         pool = ThreadPool(processes=4)
@@ -258,8 +264,20 @@ class Downloader():
         pool.join()
 
         print("Download compelete!!")
+        input("Press any keys to exit...")
+        sys.exit(0)
 
     def run(self):
         self.get_post_url_list()
         self.get_pics_url_list()
         self.get_pics()
+
+
+if __name__ == "__main__":
+    account = input('Enter your banciyuan account (phone number/e-mail): ')
+    password = input('Enter your banciyuan password: ')
+    coser_id = input('Enter banciyuan coser id: ')
+    bcy_home_dir = input('Enter banciyuan home path (i.e. E:/banciyuan): ')
+
+    dl = Downloader(account=account, password=password, coser_id=coser_id, bcy_home_dir=bcy_home_dir)
+    dl.run()

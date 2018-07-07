@@ -1,3 +1,6 @@
 __pycache__/
 .DS_Store
 .vscode/
+build/
+dist/
+bcy_downloader.spec
