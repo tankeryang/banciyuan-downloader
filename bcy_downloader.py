@@ -21,8 +21,8 @@ class Downloader():
         self.bcy_home_dir = bcy_home_dir
         self.post_type = post_type
         self.__home_url = "https://bcy.net"
-        self.__web_user_url = "https://bcy.net/passport/web/user/login/?account_sdk_source=web"
-        self.__dologin_url = "https://bcy.net/public/dologin"
+        # self.__web_user_url = "https://bcy.net/passport/web/user/login/?account_sdk_source=web"
+        # self.__dologin_url = "https://bcy.net/public/dologin"
         self.__session = self.__login()
         self.__coser_dir = self.bcy_home_dir + '/' + self.__create_coser_dir_name()
         self.__post_per_page = 35
@@ -99,26 +99,28 @@ class Downloader():
         session.get(url=self.__home_url)
         session.headers.update({'X-Requested-With': 'XMLHttpRequest', 'Referer': 'http://bcy.net/'})
 
-        # 先请求https://bcy.net/passport/web/user/login/?account_sdk_source=web拿到user_id
-        form_data_web_user = {
-            'account': self.account,
-            'password': self.password,
-            'aid': '1305'
-        }
-        response_web_user = session.post(url=self.__web_user_url, data=form_data_web_user).json()
-        if response_web_user['message'] == 'error':
-            logging.error("account or password error. login failed.")
-            sys.exit(1)
-        else:
-            user_id = response_web_user['data']['user_id']
+        # # 先请求https://bcy.net/passport/web/user/login/?account_sdk_source=web拿到user_id
+        # form_data_web_user = {
+        #     'account': self.account,
+        #     'password': self.password,
+        #     'aid': '1305'
+        # }
+        # response_web_user = session.post(url=self.__web_user_url, data=form_data_web_user).json()
+        # if response_web_user['message'] == 'error':
+        #     logging.error("account or password error. login failed.")
+        #     sys.exit(1)
+        # else:
+        #     user_id = response_web_user['data']['user_id']
 
-        # 再请求dologin登录
-        form_data_dologin = {
-            'user_id': user_id,
-            '_csrf_token': session.cookies.get_dict()['_csrf_token']
-        }
-        session.post(url=self.__dologin_url, data=form_data_dologin)
+        # # 再请求dologin登录
+        # form_data_dologin = {
+        #     'user_id': user_id,
+        #     '_csrf_token': session.cookies.get_dict()['_csrf_token']
+        # }
+        # session.post(url=self.__dologin_url, data=form_data_dologin)
 
+        # 因为现在登录加了滑块验证，因此这里就不做登录的模拟了，太麻烦。。
+        # 要是遇到粉丝可见的主题则直接跳过。有心的自己手动下载吧
         return session
 
     def __create_coser_dir_name(self):
@@ -153,16 +155,14 @@ class Downloader():
         soup = BeautifulSoup(resp.text, 'lxml')
 
         # 获取发布作品数与总页数
-        if soup.find(name='ul', class_='pager') is not None:
-            post_nums_text = soup.find(
-                name='li', class_='pager__item pager__item--is-cur pager__item--disabled'
-            ).find('span').get_text()
+        if soup.find(name='div', class_='dm-pager-total') is not None:
+            post_nums_text = soup.find(name='div', class_='dm-pager-total').get_text()
             post_nums = eval(
                 post_nums_text.strip(post_nums_text[0]).strip(post_nums_text[len(post_nums_text) - 1])
             )
             page_nums = math.ceil(post_nums / self.__post_per_page)
         else:
-            post_nums = len(soup.find_all(name='li', class_='js-smallCards _box'))
+            post_nums = len(soup.find_all(name='li', class_='_box note'))
             page_nums = 1
 
         # 所有作品
@@ -170,8 +170,8 @@ class Downloader():
             for page_id in range(1, page_nums + 1):
                 resp = self.__session.get(url=coser_post_url + '?&p={}'.format(str(page_id)))
                 soup = BeautifulSoup(resp.text, 'lxml')
-                for tag in soup.find_all(name='li', class_='js-smallCards _box'):
-                    post_urls_list.append(self.__home_url + tag.find('a', class_='db posr ovf').get('href'))
+                for tag in soup.find_all(name='li', class_='_box note'):
+                    post_urls_list.append(self.__home_url + tag.find('a', class_='db posr').get('href'))
         elif self.post_type == 'cos':
             # TODO: 只获取带有`COS`标签的作品，这个必须解析每个作品页才能获取到
             logging.warning("This type dosen't support now. Please use type [all].")
@@ -185,31 +185,46 @@ class Downloader():
             logging.info('The local post is latest, need not to download.')
             sys.exit(0)
         
-        logging.info("There are %d post you can update." % len(post_urls_list))
+        logging.info("There are %d posts you can update." % len(post_urls_list))
         self.__post_url_list = post_urls_list
 
     def __get_pics_url_list(self, post_url):
+        """获取每个主题下的所有图片url"""
+        
         pics_url_list = []
 
         resp = self.__session.get(url=post_url)
         soup = BeautifulSoup(resp.text, 'lxml')
 
-        # 获取所属作品名
-        post_name = re.sub(
-            r'[\/:*?"<>|]', '-',
-            '-'.join(list(map(lambda x: x.text.strip().strip('\n').strip('.'), soup.find_all(name='a', class_='_tag _tag--normal db'))))
-        )
-        
-        print(post_url, post_name)
+        # 判断是否粉丝可见，是就跳过
+        if soup.find_all(name='img', class_='vam') is None:
+            # 获取所属作品名
+            post_name = re.sub(
+                r'[\/:*?"<>|]', '-',
+                '-'.join(list(map(
+                    lambda x: x.find(name='span').get_text().strip().strip('\n').strip('.'),
+                    soup.find_all(name='a', class_='dm-tag dm-tag-a ')
+                )))
+            )
+            
+            print(post_url, post_name)
 
-        # 获取图片url列表
-        for pic_id, tag in enumerate(soup.find_all(name='img', class_='detail_std detail_clickable'), 1):
-            pic_url = tag.get('src')
-            # url后加?pic_id是为了后面写入时能按编号命名文件
-            if pic_url[-5:] == '/w650':
-                pics_url_list.append(pic_url[:-5] + '?' + str(pic_id))
-            else:
-                pics_url_list.append(pic_url + '?'+ str(pic_id))
+            # 获取图片url列表
+            for pic_id, tag in enumerate(list(map(
+                lambda x: x.find(name='img'), soup.find_all(name='div', class_='img-wrap-inner')
+                )), 1):
+
+                pic_url = tag.get('src')
+                print(pic_url)
+
+                # url后加?pic_id是为了后面写入时能按编号命名文件
+                if pic_url[-5:] == '/w650':
+                    pics_url_list.append(pic_url[:-5] + '?' + str(pic_id))
+                else:
+                    pics_url_list.append(pic_url + '?'+ str(pic_id))
+        else:
+            post_name = post_url.split('/')[-1] + '_粉丝可见'
+            pics_url_list.append('None')
 
         self.__download_data[post_url] = {'post_name': post_name, 'pics_url_list': pics_url_list}
 
@@ -233,20 +248,22 @@ class Downloader():
             open(post_dir + '/url.local', 'wb').write(post_url.encode('utf-8'))
         
         # 保存图片
-        # time.sleep(0.2)
-        pic = self.__session.get(pic_url.split('?')[0], timeout=3)
-        if pic.status_code is 200:
-            logging.info(" url: {} id: {}".format(pic_url.split('?')[0], pic_url.split('?')[1]))
-            open(post_dir + '/' + pic_url.split('?')[1] + '.jpg', 'wb').write(pic.content)
+        if pic_url != 'None':
+            pic = self.__session.get(pic_url.split('?')[0], timeout=3)
+            if pic.status_code is 200:
+                logging.info(" url: {} id: {}".format(pic_url.split('?')[0], pic_url.split('?')[1]))
+                open(post_dir + '/' + pic_url.split('?')[1] + '.jpg', 'wb').write(pic.content)
+            else:
+                logging.error(" {} not found. status code: {}".format(pic_url.split('?')[0], pic.status_code))
         else:
-            logging.error(" {} not found. status code: {}".format(pic_url.split('?')[0], pic.status_code))
+            logging.warning('该作品为粉丝可见, 请手动下载')
 
     def get_pics(self):
         pool = ThreadPool(processes=4)
         logging.info("Downloading...")
 
         for post_url in self.__download_data.keys():
-            logging.info("Downloading pictrues from {}...".format(post_url))
+            logging.info("Downloading pictrues from {}".format(post_url))
 
             post_name = self.__create_post_dir(self.__download_data[post_url]['post_name'])
             pics_url_list = self.__download_data[post_url]['pics_url_list']
