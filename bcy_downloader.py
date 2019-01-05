@@ -6,6 +6,7 @@ import re
 import random
 import logging
 import requests
+import json
 from bs4 import BeautifulSoup
 from functools import partial
 from multiprocessing import Pool
@@ -197,7 +198,7 @@ class Downloader():
         soup = BeautifulSoup(resp.text, 'lxml')
 
         # 判断是否粉丝可见，是就跳过
-        if soup.find_all(name='img', class_='vam') is None:
+        if soup.find(name='span', style='padding-left:10px;color:#4d70a5;font-size:16px') is None:
             # 获取所属作品名
             post_name = re.sub(
                 r'[\/:*?"<>|]', '-',
@@ -210,18 +211,26 @@ class Downloader():
             print(post_url, post_name)
 
             # 获取图片url列表
-            for pic_id, tag in enumerate(list(map(
-                lambda x: x.find(name='img'), soup.find_all(name='div', class_='img-wrap-inner')
-                )), 1):
+            ## 半次元为了防止爬虫可谓煞费苦心啊...所有的图片url和加载都用js来控制,
+            ## 好在不是很复杂，只要把内容json解析出来就好...
+            json_txt = ''
+            for script in soup.find_all(name='script'):
+                if 'window.__ssr_data = JSON.parse' in script.text:
+                    json_txt = script.text
 
-                pic_url = tag.get('src')
-                print(pic_url)
+            json_txt = json_txt.split('JSON.parse("')[1].split('");')[0]
+            json_txt = json_txt.replace('\\"', '"')
+            json_txt = json_txt.replace('\\\\"', '"')
+            json_txt = json_txt.replace('https:\\\\u002F\\\\u002F', 'https://')
+            json_txt = json_txt.replace('\\\\u002F', '/')
+            json_txt = json_txt.replace('"{', '{')
+            json_txt = json_txt.replace('}"', '}')
 
-                # url后加?pic_id是为了后面写入时能按编号命名文件
-                if pic_url[-5:] == '/w650':
-                    pics_url_list.append(pic_url[:-5] + '?' + str(pic_id))
-                else:
-                    pics_url_list.append(pic_url + '?'+ str(pic_id))
+            resp_json = json.loads(json_txt)
+
+            for pic_id, detail in enumerate(resp_json['detail']['post_data']['multi'], 1):
+                pics_url_list.append(detail['original_path'] + '?' + str(pic_id))
+
         else:
             post_name = post_url.split('/')[-1] + '_粉丝可见'
             pics_url_list.append('None')

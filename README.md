@@ -1,3 +1,19 @@
+# banciyuan-downloader v2.2
+
+* 更新时间: `2019-01-05`
+
+## 更新原因
+
+因为有热心网友提了[issue](https://github.com/tankeryang/banciyuan-downloader/issues/4)，作为一名有担当的github用户，要为使用者负责。
+在仔细分析了一轮半次元的前端后，得出结论:
+
+* 半次元前端又双叒叕改版了。。
+
+这次改得比较大，似乎是为了专门防止爬虫。。__图片url__ 不会明文放在html静态页面里，而是改为js动态加载，这给解析带来了很大麻烦。
+
+所幸的是，html的`<script>`标签里还是存在 __内容的JSON字符串__，里面就包含了图片url。只要拿到该字符串，再处理一下，之后`json.loads()`成标准json对象，
+就万事大吉了。具体实现参考源码
+
 # banciyuan-downloader v2.1
 
 * 更新时间: `2018-11-07`
