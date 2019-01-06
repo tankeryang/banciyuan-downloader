@@ -56,7 +56,7 @@
     # 实例化Downloader对象
     # coser_id: 770554
     # 下载目录: E:\banciyuan (注意: windows下需按照windows特有的 <反斜杠 \> 来分隔路径，如 E:\xxx\pictures\banciyuan)
-    dl = Downloader(coser_id='770554', bcy_home_dir='E:\banciyuan')
+    dl = Downloader(coser_id='770554', bcy_home_dir='E:\\banciyuan')
 
     # 获取作品url列表
     dl.get_post_url_list()
@@ -105,7 +105,7 @@
     # 实例化Downloader对象
     # coser_id: 770554
     # 下载目录: E:\banciyuan (注意: windows下需按照windows特有的 <反斜杠 \> 来分隔路径，如 E:\xxx\pictures\banciyuan)
-    dl = Downloader(coser_id='770554', bcy_home_dir='E:\banciyuan')
+    dl = Downloader(coser_id='770554', bcy_home_dir='E:\\banciyuan')
 
     # 自动下载
     dl.run()
@@ -135,7 +135,7 @@ __Release__ 版本的`exe`可执行文件可直接运行
 
 * `Enter banciyuan coser id:`: 输入coser id```770554```
 
-* `Enter banciyuan home path (i.e. E:/banciyuan):`: 输入半次元图片保存主目录（如`E:\banciyuan`）
+* `Enter banciyuan home path (i.e. E:\banciyuan):`: 输入半次元图片保存主目录（如`E:\banciyuan`）
 
 * `downloading...`：等待下载完成
 
